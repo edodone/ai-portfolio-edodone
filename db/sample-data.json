@@ -1,37 +1,27 @@
 [
   {
     "id": 1,
-    "info": "Piyush Agarwal",
-    "description": "Masters from VIT Vellore, Experienced Software Engineer, YouTuber (RoadsideCoder). Born and raised in Kanpur, Uttar Pradesh. I currently live in Gurugram. I used to work as a professional voice over artist in the past."
+    "info": "Edouard Dorier",
+    "description": "As a front-end developer and UI/UX designer, I specialize in optimizing mobile websites, progressive web apps, and native mobile applications. With expertise in JavaScript, I leverage modern frameworks like React, Next.js, and React Native with Expo to deliver ergonomic and high-performance solutions. My main focus is to enhance user experience while addressing technical debt. Experienced in Agile and Scrum environments, I also contribute as a consultant or auditor to develop tailored digital strategies and improve the accessibility and usability of your web and mobile interfaces."
   },
   {
     "id": 2,
     "info": "Education",
-    "description": "Masters from VIT Vellore"
+    "description": "Doranco Master in Web Development (2011)"
   },
   {
     "id": 3,
-    "info": "Profession",
-    "description": "Professional Voiceover Artist (Past), Experienced Software Engineer (Current)"
+    "info": "Experience", 
+    "description": "SOCIETE GENERALE, Paris – (January 2021 - May 2022) FRONT UI Integration Team\n\nSGComponent +: The project involved implementing REACT components in a shared library for all Société Générale services\n\nFT-Savings / FT-Credit: Redesign of interfaces and JS refactoring of savings and credit simulation tools interfaces\n\nDQHub / RESG: Evolution and redesign of a ticketing platform managing banking anomalies and incidents for the Société Générale group. Offshore collaboration with Bangalore\n\nWeb Performance Optimization: Implementation of best practices to optimize Core Web Vitals (FCP, LCP, CLS, FID) to improve user experience and performance across all applications\n\nContext: ESN Mission\n\nStack: React, Node, Redux, Typescript, Git, Webpack, Docker, Figma, HTML/ CSS\n\n-------------------\n\nBNP Paribas*, Paris – (* May 2022 - November 2023 ) Artificial Intelligence and Analytics Application Delivery\n\nIMPACT: Development of an ESG assessment questionnaire for credit granting:\nDesign and development of an ESG (Environmental, Social, and Governance) assessment questionnaire to enable our company to better evaluate credit-seeking companies. The questionnaire assessed companies' practices in environmental, governance, and social responsibility to promote financing for those that meet these criteria.\n\nWeb Performance Optimization: Implementation of best practices to optimize Core Web Vitals (FCP, LCP, CLS, FID) to improve user experience and Impact application performance.\n\nCreation of a questionnaire prototype in Figma to allow the entire team to visualize and adjust various questions and associated user statuses.\n\nQUANTEXA: Maintenance of an application for detecting money laundering activities in client companies\n\nCSR Evolution: Participation in the \"CSR Evolution\" data visualization project that tracked the evolution of companies' ESG practices over time, using data from various sources."
   },
   {
     "id": 4,
-    "info": "YouTube Channel",
-    "description": "RoadsideCoder - Content on Frontend Development and Interview Preparation"
+    "info": "Github",
+    "description": "https://github.com/edodone"
   },
   {
     "id": 5,
-    "info": "Instagram",
-    "description": "@RoadsideCoder where he posts reels on frontend development"
-  },
-  {
-    "id": 5,
-    "info": "Twitter",
-    "description": "@Piyush_eon"
-  },
-  {
-    "id": 6,
-    "info": "Personal Project",
-    "description": "Made a Chat App using MERN Stack, Code for that project - https://github.com/piyush-eon/mern-chat-app"
+    "info": "Hobbies",
+    "description": "Reading, Cooking and Coding"
   }
 ]
