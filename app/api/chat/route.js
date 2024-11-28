@@ -1,4 +1,5 @@
 import { DataAPIClient } from "@datastax/astra-db-ts";
+
 import { HfInference } from '@huggingface/inference';
 
 const client = new DataAPIClient(process.env.ASTRA_DB_APPLICATION_TOKEN);
@@ -11,53 +12,77 @@ const hf = new HfInference(process.env.HUGGINGFACE_API_KEY);
 export async function POST(req) {
   try {
     const { messages } = await req.json();
-    const latestMessage = messages[messages?.length - 1]?.content;
-    
-    const collection = await db.collection("portfolio");
-    const documents = await collection.find({}).toArray();
+    const lastMessage = messages[messages.length - 1].content;
+    let docContext = "";
 
-    const docContext = `
-      START CONTEXT
-      ${documents?.map((doc) => `${doc.info}: ${doc.description}`).join("\n")}
-      END CONTEXT
-    `;
+    const embedding = await hf.featureExtraction({
+      model: 'sentence-transformers/all-MiniLM-L6-v2',
+      inputs: lastMessage,
+    });
 
-    const ragPrompt = `You are an AI assistant answering questions as Edouard Dorier in his Portfolio App. 
-    Format responses using markdown where applicable.
-    Use this context to answer questions:
-    ${docContext}
-    If the answer is not provided in the context, say "I'm sorry, I do not know the answer".
-    
-    Human: ${latestMessage}
-    
-    Assistant:`;
+    const collection = await db.collection("myPortfolio");
+
+    const cursor = await collection.find(
+      {},
+      {
+        sort: {
+          $vector: embedding
+        },
+        limit: 5,
+        projection: {
+          info: 1,
+          description: 1,
+          _id: 0
+        }
+      }
+    );
+
+    const documents = await cursor.toArray();
+
+
+    docContext = documents.length > 0 
+      ? `START CONTEXT\n${documents.map(doc => `${doc.info}: ${doc.description}`).join('\n')}\nEND CONTEXT`
+      : "No relevant context found";
+
+
+
+    const prompt = `
+You are EDO Assistant, representing Edouard Dorier. Here are the EXACT facts about Edouard:
+
+${docContext}
+
+IMPORTANT: You must ONLY use the information provided above. If a detail is not explicitly mentioned in the context, say you don't have that information. Do not make up or infer any additional information.
+
+Current question: ${lastMessage}
+
+Previous conversation:
+${messages.slice(0, -1).map(m => `${m.role === 'user' ? 'Human' : 'Assistant'}: ${m.content}`).join('\n')}
+`;
 
     const response = await hf.textGeneration({
       model: 'mistralai/Mistral-7B-Instruct-v0.2',
-      inputs: ragPrompt,
+      inputs: prompt,
       parameters: {
-        max_new_tokens: 1000,
-        temperature: 0.7,
+        max_new_tokens: 500,
+        temperature: 0.3,
         top_p: 0.95,
-        return_full_text: false
+        return_full_text: false,
       }
     });
 
-    console.log('Response from HF:', response);
 
-    return new Response(JSON.stringify({ text: response.generated_text }), {
-      headers: {
-        'Content-Type': 'application/json',
-      },
+    return new Response(JSON.stringify({ 
+      content: response.generated_text,
+      role: 'assistant'
+    }), {
+      headers: { 'Content-Type': 'application/json' }
     });
 
   } catch (error) {
-    console.error('Error:', error);
-    return new Response(JSON.stringify({ error: error.message }), { 
-      status: 500,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+    console.error('Error in chat route:', error);
+    return new Response(
+      JSON.stringify({ error: 'An error occurred processing your request' }), 
+      { status: 500 }
+    );
   }
 }

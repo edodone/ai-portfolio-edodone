@@ -25,9 +25,18 @@ const splitter = new RecursiveCharacterTextSplitter({
     chunkOverlap: 200,
 });
 
+const deleteCollection = async () => {
+    try {
+        await db.dropCollection("myPortfolio");
+        console.log("Collection deleted successfully");
+    } catch (error) {
+        console.error("Error deleting collection:", error);
+    }
+};
+
 const createCollection = async () => {
     try {
-        await db.createCollection("portfolio", {
+        await db.createCollection("myPortfolio", {
             vector: {
                 dimension: 384, // MiniLM-L6-v2 outputs 384-dimensional vectors
             }
@@ -38,28 +47,24 @@ const createCollection = async () => {
 }
 
 const loadData = async () => {
-    const collection = await db.collection("portfolio")
+    const collection = await db.collection("myPortfolio")
     const embedder = await initializeEmbedder();
 
     for await (const { id, info, description } of sampleData) {
-        const chunks = await splitter.splitText(description);
-        
-        for await (const chunk of chunks) {
-            const embedding = await embedder(chunk, {
-                pooling: 'mean',
-                normalize: true
-            });
+        const embedding = await embedder(description, {
+            pooling: 'mean',
+            normalize: true
+        });
 
-            const res = await collection.insertOne({
-                document_id: id,
-                $vector: Array.from(embedding.data),
-                info,
-                description: chunk
-            })
-        }
+        const res = await collection.insertOne({
+            document_id: id,
+            $vector: Array.from(embedding.data),
+            info,
+            description: description
+        });
     }
 
     console.log("data added");
 }
 
-createCollection().then(() => loadData())
+// deleteCollection().then(() => createCollection()).then(() => loadData())

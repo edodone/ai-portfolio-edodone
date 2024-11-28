@@ -1,79 +1,83 @@
 "use client";
 
-import Image from "next/image";
-import {useChat} from "ai/react";
+import { useEffect } from "react";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useChat } from "./hooks/useChat";
 
-export default function Home() {
-  const {isLoading, messages, input, handleInputChange, handleSubmit} =
-    useChat({
-      api: "/api/chat",
-    });
+const queryClient = new QueryClient();
 
-  const noMessages = !messages || messages.length === 0;
+function Chat() {
+  const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat();
 
-  console.log(messages);
+  useEffect(() => {
+    const messagesContainer = document.querySelector('.messages-container');
+    if (messagesContainer) {
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+  }, [messages]);
 
   return (
-    <main>
-{/*       <Image
-        layout="fill"
-        src="/rs-big.webp"
-        alt="RoadsideCoder Banner"
-        objectFit="cover"
-      /> */}
-      <div className="absolute px-4 w-full h-screen flex flex-col gap-5 items-center bottom-5">
+    <main className="min-h-screen bg-gray-900">
+      <div className="px-4 w-full min-h-screen flex flex-col gap-5 items-center pb-5">
         <h1 className="text-4xl font-Kanit md:text-5xl font-bold text-white mt-10">
-          Edouard Dorier&rsquo;s AI Portfolio
+          Chat with EDO Assistant
         </h1>
 
-        <section className="w-full flex-1 flex flex-col overflow-y-scroll">
-          {noMessages ? (
-            <p className="text-center text-xl">Ask me Anything</p>
-          ) : (
-            <>
-              {messages.map((message, index) => {
-                return (
-                  <div
-                    className={`rounded-3xl ${
-                      message.role === "user"
-                        ? "rounded-br-none bg-blue-500 ml-auto"
-                        : "rounded-bl-none bg-orange-700"
-                    } m-2 p-2 px-4 w-[70%] md:w-[80%] mt-4 text-gray-200`}
-                    key={`message-${index}`}
-                  >
-                    <b>{message.role === "user" ? "User:" : "Piyush:"}</b>{" "}
-                    {message.content}
-                  </div>
-                );
-              })}
-
-              {isLoading && <span className="ml-auto">Thinking... 🤔</span>}
-            </>
-          )}
+        <section className="w-full max-w-3xl flex-1 flex flex-col overflow-hidden relative bg-gray-800 rounded-lg">
+          <div className="messages-container flex-1 overflow-y-auto p-4">
+            {messages.map((message, index) => (
+              <div
+                key={index}
+                className={`flex ${message.role === "user" ? "justify-end" : "justify-start"} mb-4`}
+              >
+                <div
+                  className={`rounded-2xl ${
+                    message.role === "user"
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-700 text-gray-100"
+                  } p-3 max-w-[80%]`}
+                >
+                  {message.content}
+                </div>
+              </div>
+            ))}
+            {isLoading && (
+              <div className="flex justify-start">
+                <div className="bg-gray-700 text-gray-100 rounded-2xl p-3">
+                  Thinking...
+                </div>
+              </div>
+            )}
+          </div>
         </section>
 
         <form
-          className="w-full flex gap-2"
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleSubmit(e);
-          }}
+          onSubmit={handleSubmit}
+          className="w-full max-w-3xl flex gap-2"
         >
           <input
-            onChange={handleInputChange}
             value={input}
-            type="text"
-            placeholder="What's your hometown?"
-            className="py-3 px-5 flex-1 rounded text-black text-2xl border-2 border-gray-50 focus:outline-none focus:border-blue-500"
+            onChange={handleInputChange}
+            placeholder="Ask me anything..."
+            className="flex-1 rounded-lg p-4 bg-gray-800 text-white border border-gray-700 focus:border-blue-500 focus:outline-none"
           />
           <button
             type="submit"
-            className="bg-blue-500 hover:bg-blue-600 text-white rounded text-xl  px-5 cursor-pointer focus:outline-none disabled:bg-blue-400"
+            disabled={isLoading}
+            className="px-6 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            Submit
+            Send
           </button>
         </form>
       </div>
     </main>
+  );
+}
+
+export default function Home() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <Chat />
+    </QueryClientProvider>
   );
 }
