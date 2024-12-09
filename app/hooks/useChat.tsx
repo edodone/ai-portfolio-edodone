@@ -1,15 +1,25 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, FormEvent, ChangeEvent } from 'react';
 import { useMutation } from '@tanstack/react-query';
 
+interface Message {
+  role: 'assistant' | 'user';
+  content: string;
+}
+
+interface ChatResponse {
+  role: 'assistant';
+  content: string;
+}
+
 export function useChat() {
-  const [messages, setMessages] = useState([{
+  const [messages, setMessages] = useState<Message[]>([{
     role: 'assistant',
     content: 'Hello! I am EDO Assistant. How can I help you today?'
   }]);
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState<string>('');
 
-  const { mutate: sendMessage, isLoading } = useMutation({
-    mutationFn: async (newMessage) => {
+  const { mutate: sendMessage, isPending } = useMutation({
+    mutationFn: async (newMessage: Message) => {
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
@@ -22,7 +32,7 @@ export function useChat() {
         throw new Error('Network response was not ok');
       }
 
-      return response.json();
+      return response.json() as Promise<ChatResponse>;
     },
     onSuccess: (data) => {
       setMessages(prev => [...prev, data]);
@@ -36,13 +46,11 @@ export function useChat() {
     }
   });
 
-  console.log(messages);
-
-  const handleSubmit = useCallback(async (e) => {
+  const handleSubmit = useCallback(async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!input.trim()) return;
 
-    const userMessage = {
+    const userMessage: Message = {
       role: 'user',
       content: input
     };
@@ -52,7 +60,7 @@ export function useChat() {
     sendMessage(userMessage);
   }, [input, sendMessage]);
 
-  const handleInputChange = useCallback((e) => {
+  const handleInputChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     setInput(e.target.value);
   }, []);
 
@@ -61,6 +69,6 @@ export function useChat() {
     input,
     handleInputChange,
     handleSubmit,
-    isLoading
+    isPending
   };
 } 
