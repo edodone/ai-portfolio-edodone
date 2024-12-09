@@ -39,16 +39,20 @@ export async function POST(req: Request): Promise<Response> {
       _id?: string;
     }
 
-    const cursor = await collection.find({
-      $vector: embedding
-    }, {
-      limit: 5,
-      projection: {
-        info: 1,
-        description: 1,
-        _id: 0
+    const cursor = await collection.find(
+      {},
+      {
+        sort: {
+          $vector: Array.isArray(embedding) ? embedding : [embedding] as any
+        },
+        limit: 5,
+        projection: {
+          info: 1,
+          description: 1,
+          _id: 0
+        }
       }
-    });
+    );
 
     const documents = await cursor.toArray();
 
