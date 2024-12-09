@@ -6,8 +6,10 @@ import { useChat } from "./hooks/useChat";
 
 const queryClient = new QueryClient();
 
+
+
 function Chat() {
-  const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat();
+  const { messages, input, handleInputChange, handleSubmit, isPending } = useChat();
 
   useEffect(() => {
     const messagesContainer = document.querySelector('.messages-container');
@@ -41,7 +43,7 @@ function Chat() {
                 </div>
               </div>
             ))}
-            {isLoading && (
+            {isPending && (
               <div className="flex justify-start">
                 <div className="bg-gray-700 text-gray-100 rounded-2xl p-3">
                   Thinking...
@@ -63,7 +65,7 @@ function Chat() {
           />
           <button
             type="submit"
-            disabled={isLoading}
+            disabled={isPending}
             className="px-6 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             Send

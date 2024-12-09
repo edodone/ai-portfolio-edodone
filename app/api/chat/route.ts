@@ -2,6 +2,17 @@ import { DataAPIClient } from "@datastax/astra-db-ts";
 
 import { HfInference } from '@huggingface/inference';
 
+// Add interfaces for message and response types
+interface Message {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+interface ChatResponse {
+  content: string;
+  role: 'assistant';
+}
+
 const client = new DataAPIClient(process.env.ASTRA_DB_APPLICATION_TOKEN);
 const db = client.db(process.env.ASTRA_DB_API_ENDPOINT, {
   namespace: process.env.ASTRA_DB_NAMESPACE,
@@ -9,9 +20,9 @@ const db = client.db(process.env.ASTRA_DB_API_ENDPOINT, {
 
 const hf = new HfInference(process.env.HUGGINGFACE_API_KEY);
 
-export async function POST(req) {
+export async function POST(req: Request): Promise<Response> {
   try {
-    const { messages } = await req.json();
+    const { messages }: { messages: Message[] } = await req.json();
     const lastMessage = messages[messages.length - 1].content;
     let docContext = "";
 
@@ -22,20 +33,22 @@ export async function POST(req) {
 
     const collection = await db.collection("myPortfolio");
 
-    const cursor = await collection.find(
-      {},
-      {
-        sort: {
-          $vector: embedding
-        },
-        limit: 5,
-        projection: {
-          info: 1,
-          description: 1,
-          _id: 0
-        }
+    interface Document {
+      info: string;
+      description: string;
+      _id?: string;
+    }
+
+    const cursor = await collection.find({
+      $vector: embedding
+    }, {
+      limit: 5,
+      projection: {
+        info: 1,
+        description: 1,
+        _id: 0
       }
-    );
+    });
 
     const documents = await cursor.toArray();
 
@@ -71,10 +84,10 @@ ${messages.slice(0, -1).map(m => `${m.role === 'user' ? 'Human' : 'Assistant'}: 
     });
 
 
-    return new Response(JSON.stringify({ 
+    return new Response(JSON.stringify({
       content: response.generated_text,
       role: 'assistant'
-    }), {
+    } as ChatResponse), {
       headers: { 'Content-Type': 'application/json' }
     });
 
